@@ -1,0 +1,28 @@
+{
+  "name": "jquery-selecton",
+  "version": "0.1.0",
+  "description": "jquery plugin that converts select elements",
+  "main": "./src/plugin.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "mocha -u tdd test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gobwas/jquery-selecton.git"
+  },
+  "keywords": [
+    "jquery",
+    "select",
+    "override",
+    "convert"
+  ],
+  "author": "Sergey Kamardin <gobwas@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/gobwas/jquery-selecton/issues"
+  },
+  "homepage": "https://github.com/gobwas/jquery-selecton"
+}
