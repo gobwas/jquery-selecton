@@ -1,0 +1,22 @@
+(function(root, factory) {
+    var isAMD, isCJS,
+        jQuery;
+
+    isCJS = typeof module === "object"   && module.exports;
+    isAMD = typeof define === "function" && define.amd;
+
+    if (isCJS) {
+        jQuery = require("jQuery");
+        module.exports = factory(jQuery);
+    } else if (isAMD) {
+        define(["jquery"], function(jQuery) {
+            return factory(jQuery);
+        });
+    } else {
+        jQuery = root.jQuery;
+        return factory(jQuery);
+    }
+
+})(this, function(jQuery) {
+    <%= contents %>
+});

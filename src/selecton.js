@@ -1,19 +1,14 @@
-var utils      = require("./selecton/utils"),
-    $          = require("jquery"),
-    Processor  = require("./processor"),
-    Unit       = require("./unit"),
-
-    isFunction = utils.isFunction,
-    isObject   = utils.isObject,
-    isString   = utils.isString,
+var $         = require("jquery"),
+    Processor = require("./selecton/processor"),
 
     Selecton;
 
+Selecton = function(element, options) {
+    var processor;
 
-Selecton = function(element, processor, options) {
     options = options || {};
 
-    if (!(processor instanceof Processor)) {
+    if (!((processor = options.processor) instanceof Processor)) {
         throw new TypeError("Processor is expected");
     }
 
@@ -76,7 +71,15 @@ Selecton.prototype = (function() {
 
                 data = {};
                 $.each(source.data, function(key, config) {
-                    data[key] = $(input)[config.selector](config.key);
+                    var getter, argument;
+
+                    getter = $input[config.selector];
+
+                    if (argument = config.key) {
+                        data[key] = getter.call($input, argument);
+                    } else {
+                        data[key] = getter.call($input);
+                    }
                 });
 
                 if (unit = processor.unit(data, id)) {
@@ -129,9 +132,16 @@ Selecton.DEFAULTS = {
                 selector: "attr",
                 key:      "title"
             },
+            content: {
+                selector: "text"
+            },
             selected: {
                 selector: "prop",
                 key:      "selected"
+            },
+            disabled: {
+                selector: "prop",
+                key:      "disabled"
             },
             "class": {
                 selector: "attr",

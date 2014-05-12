@@ -1,5 +1,12 @@
-var jquery   = require("jquery"),
-    Selecton = require("./selecton"),
+var $                 = require("jquery"),
+    Selecton          = require("./selecton"),
+    Processor         = require("./selecton/processor"),
+    DropdownProcessor = require("./selecton/processor/dropdown"),
+    ButtonsProcessor  = require("./selecton/processor/buttons"),
+    utils             = require("./selecton/utils"),
+
+    isFunction = utils.isFunction,
+    isString   = utils.isString,
 
     _old;
 
@@ -14,13 +21,17 @@ $.fn.selecton = function(options) {
     args = Array.prototype.slice.call(arguments, 1);
 
     return this.map(function () {
-        var selecton, method;
+        var selecton, method, Processor;
 
         if (isString(options)) {
             method = options;
             options = {};
         } else {
             options || (options = {});
+        }
+
+        if (isString(options.processor) && isFunction(Processor = $.fn.selecton.processors[options.processor])) {
+            options.processor = new Processor();
         }
 
         selecton = $(this).data('selecton');
@@ -39,10 +50,12 @@ $.fn.selecton = function(options) {
     });
 };
 
-$.extend($.fn.selecton, Selecton);
+$.fn.selecton.processor = Processor;
+$.fn.selecton.processors = {
+    button:   ButtonsProcessor,
+    dropdown: DropdownProcessor
+};
 
 $.fn.selecton.noConflict = function() {
     $.fn.selecton = _old;
 };
-
-module.exports = Selecton;

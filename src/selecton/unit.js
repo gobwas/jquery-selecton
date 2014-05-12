@@ -3,7 +3,8 @@ var $ = require("jquery"),
 
 Unit = function(id, data) {
     this.id = id;
-    $.extend(this, data);
+    this.data = {};
+    $.extend(this.data, data);
 };
 
 Unit.prototype = {

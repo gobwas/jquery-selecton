@@ -1,18 +1,19 @@
-var $     = require("jquery"),
-    utils = require("./utils"),
-    Unit  = require("./unit"),
+var $        = require("jquery"),
+    utils    = require("./utils"),
+    inherits = require("./inherits"),
+    Unit     = require("./unit"),
 
     isObject   = utils.isObject,
     isString   = utils.isString,
     isFunction = utils.isFunction,
     isArray    = utils.isArray,
 
-    AbstractProcessor;
+    Processor;
 
-AbstractProcessor = function(options) {
+Processor = function(options) {
     options = options || {};
 
-    this.options = $.extend(true, {}, AbstractProcessor.DEFAULTS, options);
+    this.options = $.extend(true, {}, this.constructor.DEFAULTS, options);
 
     this.handlers = {};
 
@@ -31,13 +32,12 @@ AbstractProcessor = function(options) {
     this.selected = null;
 };
 
-AbstractProcessor.prototype = {
-    constructor: AbstractProcessor,
+Processor.prototype = {
+    constructor: Processor,
 
     events: {
         'click': {
-            button:  'onButtonClick',
-            tumbler: 'onToggleClick'
+            button:  'onButtonClick'
         }
     },
 
@@ -85,46 +85,26 @@ AbstractProcessor.prototype = {
         }
     })(),
 
+    _delegateEvents: function() {
+        var self = this;
+
+        $.each(this.events, function(event, elements) {
+            $.each(elements, function(element, fnName) {
+                var config;
+                if (config = self.options.view[element]) {
+                    self.content.on([event, self.options.event_namespace].join('.'), [config.tagName, config.className.split(' ').join('.')].join('.'), $.proxy(self[fnName], self));
+                }
+            });
+        });
+    },
+
     initialize: function(target) {
         this.target  = $(target);
-        this.list    = this._createElement(this.options.view.list);
-        this.content = this._createElement(this.options.view.content);
+
+        this.list    = this.createList();
+        this.content = this.createContent();
 
         this.content.append(this.list);
-    },
-
-    unit: function(data, id) {
-        var unit, $item, $button;
-
-        unit = new Unit(id, data);
-
-        if (this.filter(unit)) {
-            this.units.push(unit);
-
-            this.items[id]   = $item   = this._createElement(this.options.view.item,   data);
-            this.buttons[id] = $button = this._createElement(this.options.view.button, data);
-
-            $item.data  (self.options.storageKey, { id: id });
-            $button.data(self.options.storageKey, { id: id });
-
-            return unit;
-        } else {
-            return null;
-        }
-    },
-
-    findUnit: function(id) {
-        var unit, x;
-
-        for (x = 0; x < this.units.length; x++) {
-            unit = this.units[x];
-
-            if (unit.id === id) {
-                return unit;
-            }
-        }
-
-        return null;
     },
 
     finalize: function() {
@@ -146,12 +126,67 @@ AbstractProcessor.prototype = {
             $button = self.buttons[unit.id];
 
             $item.append($button);
-            self.$list.append($item);
+            self.list.append($item);
         });
 
         this.content.insertAfter(this.target);
 
-        this.delegateEvents();
+        this._delegateEvents();
+    },
+
+    createList: function() {
+        return this._createElement(this.options.view.list);
+    },
+
+    createContent: function() {
+        return this._createElement(this.options.view.content);
+    },
+
+    createItem: function(data) {
+        return this._createElement(this.options.view.item, data);
+    },
+
+    createButton: function(data) {
+        return this._createElement(this.options.view.button, data);
+    },
+
+    unit: function(data, id) {
+        var self = this,
+            unit, $item, $button;
+
+        unit = new Unit(id, data);
+
+        if (this.filter(unit)) {
+            this.units.push(unit);
+
+            this.items[id]   = $item   = this.createItem(data);
+            this.buttons[id] = $button = this.createButton(data);
+
+            $item.data  (self.options.storageKey, { id: id });
+            $button.data(self.options.storageKey, { id: id });
+
+            if (unit.data.selected) {
+                this.selected = id;
+            }
+
+            return unit;
+        } else {
+            return null;
+        }
+    },
+
+    findUnit: function(id) {
+        var unit, x;
+
+        for (x = 0; x < this.units.length; x++) {
+            unit = this.units[x];
+
+            if (unit.id === id) {
+                return unit;
+            }
+        }
+
+        return null;
     },
 
     sort: function() {
@@ -186,25 +221,12 @@ AbstractProcessor.prototype = {
         });
     },
 
-    delegateEvents: function() {
-        var self = this;
+    filter: function(unit) {
+        if (!(unit instanceof Unit)) {
+            throw new TypeError("Unit is expected");
+        }
 
-        $.each(this.events, function(event, elements) {
-            $.each(elements, function(element, fnName) {
-                var config;
-                if (config = self.options.view[element]) {
-                    self.content.on([event, self.options.event_namespace].join('.'), [config.tagName, config.className.split(' ').join('.')].join('.'), $.proxy(self[fnName], self));
-                }
-            });
-        });
-    },
-
-    tumbler: function($el, options) {
-        return $el;
-    },
-
-    toggle: function() {
-        return true;
+        return !unit.data.skip;
     },
 
     bind: function(fn) {
@@ -218,8 +240,9 @@ AbstractProcessor.prototype = {
     select: function(id) {
         var className;
 
+        // Switch item classes
         try {
-            className = this.options.item.classes.selected;
+            className = this.options.view.item.onData.classes.selected;
         } catch (err) {
             // Could not find classes definition
         }
@@ -232,24 +255,29 @@ AbstractProcessor.prototype = {
             this._switchClass(this.items[id], className, true);
         }
 
+        // Switch button classes
+        try {
+            className = this.options.view.button.onData.classes.selected;
+        } catch (err) {
+            // Could not find classes definition
+        }
+
+        if (className) {
+            if (this.selected !== null) {
+                this._switchClass(this.buttons[this.selected], className, false);
+            }
+
+            this._switchClass(this.buttons[id], className, true);
+        }
+
         this.selected = id;
         this.notify(id);
     },
 
-    filter: function(unit) {
-        if (!(unit instanceof Unit)) {
-            throw new TypeError("Unit is expected");
+    setHandler: function(event, handler) {
+        if (this.handlers[event]) {
+            this.handlers[event] = handler;
         }
-
-        return !unit.input.data("skip");
-    },
-
-    comparator: function(unit, index) {
-        return index;
-    },
-
-    iterator: function(unit) {
-        //
     },
 
     onButtonClick: function(event) {
@@ -276,22 +304,6 @@ AbstractProcessor.prototype = {
         }
     },
 
-    onToggleClick: function(event) {
-        var self = this,
-            handler;
-
-        handler = this.handlers['toggle'];
-
-        if (isFunction(handler)) {
-            $.when(handler.call(null, event))
-                .then(function() {
-                    self.toggle()
-                });
-        } else {
-            this.toggle();
-        }
-    },
-
     find: function(type, filter) {
         var self = this,
             filtered = [];
@@ -312,10 +324,12 @@ AbstractProcessor.prototype = {
         return filtered;
     },
 
-    setHandler: function(event, handler) {
-        if (this.handlers[event]) {
-            this.handlers[event] = handler;
-        }
+    comparator: function(unit, index) {
+        //
+    },
+
+    iterator: function(unit) {
+        //
     },
 
     destroy: function() {
@@ -323,13 +337,13 @@ AbstractProcessor.prototype = {
     }
 };
 
-AbstractProcessor.DEFAULTS = {
+Processor.DEFAULTS = {
     storageKey:      "selecton-storage",
     event_namespace: "selecton",
     view: {
         content: {
             tagName:   "div",
-            className: "selecton-processor",
+            className: "selecton",
             onData: {
                 attributes: [],
                 properties: [],
@@ -339,7 +353,7 @@ AbstractProcessor.DEFAULTS = {
         },
         list: {
             tagName:   "ul",
-            className: "properties",
+            className: "selecton-options",
             onData: {
                 attributes: ["class"],
                 properties: [],
@@ -349,29 +363,36 @@ AbstractProcessor.DEFAULTS = {
         },
         item: {
             tagName:   "li",
-            className: "properties-item",
+            className: "selecton-option",
             onData: {
                 attributes: ["class"],
                 properties: [],
                 content:    null,
                 classes: {
-                    "selected": "is--active"
+                    "selected": "is--active",
+                    "disabled": "is--disabled"
                 }
             }
         },
         button: {
-            tagName:    "a",
-            className:  "properties-link",
+            tagName:    "button",
+            className:  "selecton-button",
             onData: {
                 attributes: ["title"],
-                properties: [],
-                content:    "title",
+                properties: ["disabled"],
+                content:    "content",
                 classes: {
-                    "selected": "is--active"
+                    "selected": "is--active",
+                    "disabled": "is--disabled"
                 }
             }
         }
     }
 };
 
-return AbstractProcessor;
+Processor.extend = function(protoProps, staticProps) {
+    return inherits(Processor, protoProps, staticProps);
+};
+
+
+module.exports = Processor;
