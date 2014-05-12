@@ -374,4 +374,4 @@ AbstractProcessor.DEFAULTS = {
     }
 };
 
-return AbstractProcessor;
+module.exports = AbstractProcessor;
