@@ -105,6 +105,8 @@ Processor.prototype = {
         this.content = this.createContent();
 
         this.content.append(this.list);
+
+        this.target.on("change", $.proxy(this.onChange, this));
     },
 
     finalize: function() {
@@ -175,13 +177,23 @@ Processor.prototype = {
         }
     },
 
-    findUnit: function(id) {
+    findUnit: function(criteria) {
         var unit, x;
+
+        if (!isObject(criteria)) {
+            criteria = {
+                id: criteria
+            };
+        }
 
         for (x = 0; x < this.units.length; x++) {
             unit = this.units[x];
 
-            if (unit.id === id) {
+            if (criteria.id != void 0 && unit.id === criteria.id) {
+                return unit;
+            }
+
+            if (criteria.value != void 0 && unit.data.value === criteria.value) {
                 return unit;
             }
         }
@@ -240,6 +252,10 @@ Processor.prototype = {
     select: function(id) {
         var className;
 
+        if (this.selected === id) {
+            return;
+        }
+
         // Switch item classes
         try {
             className = this.options.view.item.onData.classes.selected;
@@ -277,6 +293,14 @@ Processor.prototype = {
     setHandler: function(event, handler) {
         if (this.handlers[event]) {
             this.handlers[event] = handler;
+        }
+    },
+
+    onChange: function() {
+        var unit;
+
+        if (unit = this.findUnit({value: this.target.val()})) {
+            this.select(unit.id);
         }
     },
 
@@ -391,7 +415,7 @@ Processor.DEFAULTS = {
 };
 
 Processor.extend = function(protoProps, staticProps) {
-    return inherits(Processor, protoProps, staticProps);
+    return inherits(this, protoProps, staticProps);
 };
 
 

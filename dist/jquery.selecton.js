@@ -1,8 +1,8 @@
 /**
  * jquery-selecton - jquery plugin that converts select elements.
  *
- * Version: 0.1.0
- * Date: 2014-05-12 18:29:14
+ * Version: 0.1.1
+ * Date: 2014-05-13 11:16:15
  *
  * Copyright 2014, Sergey Kamardin <gobwas@gmail.com>.
  *
@@ -165,6 +165,7 @@ Selecton.prototype = (function() {
                 var $input, data, unit;
 
                 $input = $(input);
+                $input.data(self.options.storageKey, { id: id });
 
                 self.inputs[id] = $input;
 
@@ -188,6 +189,8 @@ Selecton.prototype = (function() {
 
             // when target is destroyed
             this.$target.on("destroy", $.proxy(self.destroy, self));
+
+            this.$target.on("change", $.proxy(self.onChange, self));
 
             processor.finalize();
 
@@ -219,6 +222,7 @@ Selecton.prototype = (function() {
 })();
 
 Selecton.DEFAULTS = {
+    storageKey: "selecton-storage",
     source: {
         tagName: "option",
         selector: null,
@@ -461,6 +465,8 @@ Processor.prototype = {
         this.content = this.createContent();
 
         this.content.append(this.list);
+
+//        this.target.on("change", $.proxy(this.onChange, this));
     },
 
     finalize: function() {
@@ -531,13 +537,23 @@ Processor.prototype = {
         }
     },
 
-    findUnit: function(id) {
+    findUnit: function(criteria) {
         var unit, x;
+
+        if (!isObject(criteria)) {
+            criteria = {
+                id: criteria
+            };
+        }
 
         for (x = 0; x < this.units.length; x++) {
             unit = this.units[x];
 
-            if (unit.id === id) {
+            if (criteria.id != void 0 && unit.id === criteria.id) {
+                return unit;
+            }
+
+            if (criteria.value != void 0 && unit.data.value === criteria.value) {
                 return unit;
             }
         }
@@ -596,6 +612,10 @@ Processor.prototype = {
     select: function(id) {
         var className;
 
+        if (this.selected === id) {
+            return;
+        }
+
         // Switch item classes
         try {
             className = this.options.view.item.onData.classes.selected;
@@ -633,6 +653,14 @@ Processor.prototype = {
     setHandler: function(event, handler) {
         if (this.handlers[event]) {
             this.handlers[event] = handler;
+        }
+    },
+
+    onChange: function() {
+        var unit;
+
+        if (unit = this.findUnit({value: this.target.val()})) {
+            this.select(unit.id);
         }
     },
 
@@ -747,11 +775,12 @@ Processor.DEFAULTS = {
 };
 
 Processor.extend = function(protoProps, staticProps) {
-    return inherits(Processor, protoProps, staticProps);
+    return inherits(this, protoProps, staticProps);
 };
 
 
 module.exports = Processor;
+
 
 },{"./inherits":3,"./unit":7,"./utils":8}],5:[function(_dereq_,module,exports){
 var Processor = _dereq_("../processor");

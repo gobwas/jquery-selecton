@@ -66,6 +66,7 @@ Selecton.prototype = (function() {
                 var $input, data, unit;
 
                 $input = $(input);
+                $input.data(self.options.storageKey, { id: id });
 
                 self.inputs[id] = $input;
 
@@ -89,6 +90,8 @@ Selecton.prototype = (function() {
 
             // when target is destroyed
             this.$target.on("destroy", $.proxy(self.destroy, self));
+
+            this.$target.on("change", $.proxy(self.onChange, self));
 
             processor.finalize();
 
@@ -120,6 +123,7 @@ Selecton.prototype = (function() {
 })();
 
 Selecton.DEFAULTS = {
+    storageKey: "selecton-storage",
     source: {
         tagName: "option",
         selector: null,

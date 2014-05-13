@@ -1,6 +1,6 @@
 {
     "name": "jquery-selecton",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "jquery plugin that converts select elements",
     "main": "./src",
     "directories": {
