@@ -91,7 +91,7 @@ Selecton.prototype = (function() {
             // when target is destroyed
             this.$target.on("destroy", $.proxy(self.destroy, self));
 
-            this.$target.on("change", $.proxy(self.onChange, self));
+            // this.$target.on("change", $.proxy(self.onChange, self));
 
             processor.finalize();
 

@@ -2,7 +2,7 @@
  * jquery-selecton - jquery plugin that converts select elements.
  *
  * Version: 0.1.1
- * Date: 2014-05-13 11:16:15
+ * Date: 2014-06-26 14:45:14
  *
  * Copyright 2014, Sergey Kamardin <gobwas@gmail.com>.
  *
@@ -35,7 +35,8 @@
 
 })(this, function(jQuery) {
     !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var o;"undefined"!=typeof window?o=window:"undefined"!=typeof global?o=global:"undefined"!=typeof self&&(o=self),o.noscope=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-var $                 = (jQuery),
+(function (global){
+var $                 = (typeof window !== "undefined" ? jQuery : typeof global !== "undefined" ? global.jQuery : null),
     Selecton          = _dereq_("./selecton"),
     Processor         = _dereq_("./selecton/processor"),
     DropdownProcessor = _dereq_("./selecton/processor/dropdown"),
@@ -96,8 +97,10 @@ $.fn.selecton.processors = {
 $.fn.selecton.noConflict = function() {
     $.fn.selecton = _old;
 };
+}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./selecton":2,"./selecton/processor":4,"./selecton/processor/buttons":5,"./selecton/processor/dropdown":6,"./selecton/utils":8}],2:[function(_dereq_,module,exports){
-var $         = (jQuery),
+(function (global){
+var $         = (typeof window !== "undefined" ? jQuery : typeof global !== "undefined" ? global.jQuery : null),
     Processor = _dereq_("./selecton/processor"),
 
     Selecton;
@@ -190,7 +193,7 @@ Selecton.prototype = (function() {
             // when target is destroyed
             this.$target.on("destroy", $.proxy(self.destroy, self));
 
-            this.$target.on("change", $.proxy(self.onChange, self));
+            // this.$target.on("change", $.proxy(self.onChange, self));
 
             processor.finalize();
 
@@ -271,6 +274,7 @@ if (!$.event.special.destroy) {
 
 
 module.exports = Selecton;
+}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./selecton/processor":4}],3:[function(_dereq_,module,exports){
 var each = function(props, func, context) {
     var result;
@@ -358,7 +362,8 @@ var inherits = function(Parent, protoProps, staticProps) {
 
 module.exports = inherits;
 },{}],4:[function(_dereq_,module,exports){
-var $        = (jQuery),
+(function (global){
+var $        = (typeof window !== "undefined" ? jQuery : typeof global !== "undefined" ? global.jQuery : null),
     utils    = _dereq_("./utils"),
     inherits = _dereq_("./inherits"),
     Unit     = _dereq_("./unit"),
@@ -466,7 +471,7 @@ Processor.prototype = {
 
         this.content.append(this.list);
 
-//        this.target.on("change", $.proxy(this.onChange, this));
+        this.target.on("change", $.proxy(this.onChange, this));
     },
 
     finalize: function() {
@@ -782,6 +787,7 @@ Processor.extend = function(protoProps, staticProps) {
 module.exports = Processor;
 
 
+}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./inherits":3,"./unit":7,"./utils":8}],5:[function(_dereq_,module,exports){
 var Processor = _dereq_("../processor");
 
@@ -789,7 +795,8 @@ module.exports = Processor.extend({
 
 });
 },{"../processor":4}],6:[function(_dereq_,module,exports){
-var $          = (jQuery),
+(function (global){
+var $          = (typeof window !== "undefined" ? jQuery : typeof global !== "undefined" ? global.jQuery : null),
     utils      = _dereq_("../utils"),
     isFunction = utils.isFunction,
     Processor  = _dereq_("../processor");
@@ -945,8 +952,10 @@ module.exports = Processor.extend({
         }
     }
 }, Processor));
+}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"../processor":4,"../utils":8}],7:[function(_dereq_,module,exports){
-var $ = (jQuery),
+(function (global){
+var $ = (typeof window !== "undefined" ? jQuery : typeof global !== "undefined" ? global.jQuery : null),
     Unit;
 
 Unit = function(id, data) {
@@ -960,6 +969,7 @@ Unit.prototype = {
 };
 
 module.exports = Unit;
+}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],8:[function(_dereq_,module,exports){
 var isFunction, isObject, isString, isArray;
 
