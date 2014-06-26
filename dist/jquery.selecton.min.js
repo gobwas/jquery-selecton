@@ -1,8 +1,8 @@
 /**
  * jquery-selecton - jquery plugin that converts select elements.
  *
- * Version: 0.1.1
- * Date: 2014-06-26 14:45:14
+ * Version: 0.1.2
+ * Date: 2014-06-26 15:14:03
  *
  * Copyright 2014, Sergey Kamardin <gobwas@gmail.com>.
  *
